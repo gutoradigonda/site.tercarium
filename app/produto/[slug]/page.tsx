@@ -7,6 +7,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { ChevronLeft, ShieldCheck, Truck, RotateCcw, ShoppingBag, MapPin } from 'lucide-react';
 import { useCart } from '@/src/context/CartContext';
 import { CartDrawer } from '@/src/components/CartDrawer';
+import { Footer } from '@/src/components/Footer';
 import { Montserrat } from 'next/font/google';
 
 const montserrat = Montserrat({
@@ -22,6 +23,7 @@ function ProductDetailContent() {
   const { addToCart } = useCart();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [product, setProduct] = useState<any>(null);
+  const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Estados para o cálculo de frete
@@ -30,32 +32,44 @@ function ProductDetailContent() {
   const [calculating, setCalculating] = useState(false);
 
   useEffect(() => {
-    async function fetchProduct() {
+    async function fetchData() {
       if (!id || id === 'undefined') return;
       
       setLoading(true);
 
-      const { data, error } = await supabase
+      // 1. Busca o produto atual
+      const { data: productData, error: productError } = await supabase
         .from('produtos')
         .select('*')
         .eq('id', id)
         .maybeSingle();
 
-      if (error) {
-        console.error('Erro ao buscar no Supabase:', error.message);
+      if (productError) console.error('Erro ao buscar produto:', productError.message);
+
+      if (productData) {
+        setProduct({
+          ...productData,
+          price: productData.sale_price || 0,
+        });
       }
 
-      if (data) {
-        setProduct({
-          ...data,
-          price: data.sale_price || 0,
-        });
+      // 2. Busca produtos variados para o "Você também pode gostar" (excluindo o atual)
+      const { data: relatedData, error: relatedError } = await supabase
+        .from('produtos')
+        .select('*')
+        .neq('id', id)
+        .limit(4); // Limita a 4 produtos para ficar alinhado na grelha
+
+      if (relatedError) console.error('Erro ao buscar relacionados:', relatedError.message);
+      
+      if (relatedData) {
+        setRelatedProducts(relatedData);
       }
       
       setLoading(false);
     }
 
-    fetchProduct();
+    fetchData();
   }, [id]);
 
   const handleAddToCart = () => {
@@ -117,16 +131,15 @@ function ProductDetailContent() {
     );
   }
 
-  // Cálculos automáticos de preço
   const salePrice = Number(product.sale_price || 0);
   const installmentValue = (salePrice / 3).toFixed(2).replace('.', ',');
   const pixPrice = (salePrice * 0.95).toFixed(2).replace('.', ',');
 
   return (
-    <main className={`min-h-screen bg-slate-950 text-white pb-16 ${montserrat.className}`}>
+    <main className={`min-h-screen bg-slate-950 text-white flex flex-col ${montserrat.className}`}>
       
-      {/* Conteúdo Principal com o espaçamento lateral idêntico ao Navbar (px-6 md:px-12 lg:px-20) */}
-      <div className="w-full px-6 md:px-12 lg:px-20 pt-28 lg:pt-32">
+      {/* Container que empurra o Footer para o fundo se a página for curta */}
+      <div className="flex-grow w-full px-6 md:px-12 lg:px-20 pt-28 lg:pt-32 pb-16">
         <div className="max-w-7xl mx-auto">
           
           {/* Botão Voltar */}
@@ -139,10 +152,11 @@ function ProductDetailContent() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-start">
+          {/* GRELHA PRINCIPAL DO PRODUTO */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
             
-            {/* Coluna Esquerda: Moldura Estilo Card para a Imagem e Selos */}
-            <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+            {/* Coluna Esquerda: Imagem e Selos */}
+            <div className="lg:col-span-7 bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
               <div className="relative aspect-square rounded-2xl bg-slate-950/60 border border-slate-800/80 flex items-center justify-center overflow-hidden shadow-inner">
                 <span className="absolute top-4 left-4 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full z-10">
                   {product.category || 'Arsenal'}
@@ -152,7 +166,6 @@ function ProductDetailContent() {
                 </div>
               </div>
               
-              {/* Selos de Confiança integrados na moldura */}
               <div className="grid grid-cols-3 gap-3 pt-2">
                 <div className="bg-slate-950/60 border border-slate-800/80 p-3 rounded-xl text-center space-y-1.5">
                   <ShieldCheck className="w-5 h-5 text-amber-500 mx-auto" />
@@ -169,10 +182,9 @@ function ProductDetailContent() {
               </div>
             </div>
 
-            {/* Coluna Direita: Informações, Descrição, Preços, Especificações, Frete e Compra */}
-            <div className="space-y-6">
+            {/* Coluna Direita: Informações */}
+            <div className="lg:col-span-5 space-y-6">
               
-              {/* Cabeçalho com Título e Descrição Principal Logo Abaixo */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <span className="text-amber-500 font-bold tracking-[0.2em] text-xs uppercase bg-amber-500/10 px-2.5 py-1 rounded-md border border-amber-500/25">
@@ -182,7 +194,7 @@ function ProductDetailContent() {
                     REF: {product.code || product.id}
                   </span>
                 </div>
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight text-white leading-tight">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black uppercase tracking-tight text-white leading-tight">
                   {product.name}
                 </h1>
                 <p className="text-slate-300 text-sm leading-relaxed pt-1">
@@ -190,7 +202,6 @@ function ProductDetailContent() {
                 </p>
               </div>
 
-              {/* Bloco de Preços Profissional */}
               <div className="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-4 sm:p-5 space-y-2 shadow-inner">
                 <div className="text-3xl sm:text-4xl font-black text-amber-400 tracking-tight">
                   R$ {salePrice.toFixed(2).replace('.', ',')}
@@ -204,7 +215,6 @@ function ProductDetailContent() {
                 </div>
               </div>
 
-              {/* Especificações Técnicas Ordenadas e Alinhadas à Esquerda */}
               <div className="bg-slate-900/40 border border-slate-800/80 rounded-xl p-5 space-y-3">
                 <h3 className="text-[11px] font-black uppercase tracking-widest text-amber-500 mb-2">
                   Especificações Técnicas
@@ -237,26 +247,25 @@ function ProductDetailContent() {
                       });
 
                       return sortedKeys.map((key) => (
-                        <div key={key} className="border-b border-slate-800/40 pb-3 space-y-1">
-                          <div className="text-slate-400 font-bold uppercase text-[11px] tracking-wider">
+                        <div key={key} className="border-b border-slate-800/40 pb-2.5 leading-relaxed">
+                          <span className="text-slate-400 font-bold uppercase text-[11px] tracking-wider mr-2">
                             {key}:
-                          </div>
-                          <div className="text-white font-medium text-left leading-relaxed">
+                          </span>
+                          <span className="text-white font-medium text-left">
                             {String(specs[key])}
-                          </div>
+                          </span>
                         </div>
                       ));
                     })()
                   ) : (
-                    <div className="border-b border-slate-800/40 pb-2 space-y-1">
-                      <div className="text-slate-400 font-bold uppercase text-[11px] tracking-wider">Garantia:</div>
-                      <div className="text-white font-medium text-left">Vitalícia contra defeitos</div>
+                    <div className="border-b border-slate-800/40 pb-2.5 leading-relaxed">
+                      <span className="text-slate-400 font-bold uppercase text-[11px] tracking-wider mr-2">Garantia:</span>
+                      <span className="text-white font-medium text-left">Vitalícia contra defeitos</span>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Simulador de Frete */}
               <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 space-y-3">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-500">
                   <MapPin className="w-4 h-4" /> Calcular Frete e Prazo
@@ -280,7 +289,6 @@ function ProductDetailContent() {
                   </button>
                 </form>
 
-                {/* Resultados do Frete */}
                 {freteResults && (
                   <div className="space-y-2 pt-2 border-t border-slate-800/80">
                     {freteResults.map((opt, idx) => (
@@ -298,7 +306,6 @@ function ProductDetailContent() {
                 )}
               </div>
 
-              {/* Botão de Adicionar ao Carrinho */}
               <div className="space-y-3 pt-2">
                 <button 
                   onClick={handleAddToCart}
@@ -315,13 +322,77 @@ function ProductDetailContent() {
               </div>
 
             </div>
-
           </div>
+
+{/* SECÇÃO: VOCÊ TAMBÉM PODE GOSTAR */}
+          {relatedProducts.length > 0 && (
+            <div className="mt-20 pt-4">
+              
+              {/* IMAGEM DE QUEBRA DE PÁGINA */}
+              <div className="w-full flex justify-center mb-10 pointer-events-none select-none">
+                <img 
+                  src="/quebra.png" 
+                  alt="Quebra de página" 
+                  className="w-full max-w-3xl opacity-80 object-contain" 
+                />
+              </div>
+
+              <h2 className="text-xl sm:text-2xl font-black uppercase text-white mb-8 text-center tracking-widest">
+                Você também pode gostar
+              </h2>
+              
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                {relatedProducts.map((item: any) => {
+                  const itemPrice = Number(item.sale_price || item.price || 0);
+
+                  return (
+                    <Link 
+                      key={item.id} 
+                      href={`/produto/${item.id}`}
+                      className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 sm:p-5 hover:border-amber-500/50 hover:shadow-2xl hover:shadow-amber-500/20 transition-all duration-300 group flex flex-col justify-between cursor-pointer"
+                    >
+                      <div>
+                        <div className="flex justify-between items-start mb-3">
+                          <span className="text-[8px] sm:text-[9px] font-bold text-amber-500 uppercase tracking-widest">
+                            {item.subcategory || 'Linha'}
+                          </span>
+                        </div>
+
+                        <div className="relative aspect-square rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-center justify-center overflow-hidden mb-4 group-hover:border-amber-500/40 transition-colors duration-300">
+                          <div className="text-slate-600 text-[10px] sm:text-xs tracking-widest uppercase font-bold text-center px-2">
+                            [ Foto do Produto ]
+                          </div>
+                        </div>
+
+                        <h3 className="text-sm sm:text-base font-black uppercase text-white group-hover:text-amber-400 transition-colors duration-300 line-clamp-2 leading-tight">
+                          {item.name}
+                        </h3>
+                      </div>
+                      
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-4 mt-4 border-t border-slate-800/80 gap-2">
+                        <div>
+                          <span className="text-[9px] text-slate-400 block uppercase tracking-wider">Valor</span>
+                          <span className="text-sm sm:text-lg font-black text-amber-400">
+                            R$ {itemPrice.toFixed(2).replace('.', ',')}
+                          </span>
+                        </div>
+                        <span className="bg-amber-500/10 text-amber-400 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg group-hover:bg-amber-500 group-hover:text-slate-950 transition-all duration-300 text-center">
+                          Ver Peça
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
         </div>
       </div>
 
-      {/* Cart Drawer */}
+      {/* COMPONENTE DO FOOTER ADICIONADO AQUI, BEM NO FINAL DA PÁGINA */}
+      <Footer />
+
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </main>
   );

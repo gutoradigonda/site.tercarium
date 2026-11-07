@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 
 export default function SortableGrid({ products }: { products: any[] }) {
-  const [sort, setSort] = useState('recentes');
+  // Alterado o estado inicial para 'alfabetica'
+  const [sort, setSort] = useState('alfabetica');
 
   // Proteção: Se não houver produtos, mostra o ecrã vazio
   if (!products || products.length === 0) {
@@ -22,15 +23,15 @@ export default function SortableGrid({ products }: { products: any[] }) {
     let sorted = [...products];
 
     switch (sort) {
+      case 'alfabetica':
+        // Ordenação Alfabética (A-Z) pelo nome do produto
+        sorted.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        break;
       case 'menor-preco':
         sorted.sort((a, b) => Number(a.sale_price || a.price || 0) - Number(b.sale_price || b.price || 0));
         break;
       case 'maior-preco':
         sorted.sort((a, b) => Number(b.sale_price || b.price || 0) - Number(a.sale_price || a.price || 0));
-        break;
-      case 'vendas':
-        // Simulação alfabética para "mais vendidos" caso não tenha um campo de quantidade de vendas no Supabase
-        sorted.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
         break;
       case 'recentes':
       default:
@@ -45,7 +46,7 @@ export default function SortableGrid({ products }: { products: any[] }) {
 
   return (
     <div className="w-full">
-      {/* Barra de Ordenação (Idêntico aos concorrentes) */}
+      {/* Barra de Ordenação */}
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 border-b border-slate-800/80 pb-4 gap-4">
         <span className="text-slate-400 text-xs font-bold uppercase tracking-widest">
           {products.length} Produtos
@@ -60,15 +61,16 @@ export default function SortableGrid({ products }: { products: any[] }) {
             onChange={(e) => setSort(e.target.value)}
             className="bg-slate-900 border border-slate-700 text-slate-300 text-xs py-2.5 px-3 rounded-xl focus:outline-none focus:border-amber-500 uppercase tracking-wider cursor-pointer transition-colors"
           >
+            {/* Novas opções de ordenação com Alfabética como padrão */}
+            <option value="alfabetica">Ordem Alfabética (A-Z)</option>
             <option value="recentes">Mais Recentes</option>
-            <option value="vendas">Mais Vendidos</option>
             <option value="menor-preco">Preço: Menor para Maior</option>
             <option value="maior-preco">Preço: Maior para Menor</option>
           </select>
         </div>
       </div>
 
-      {/* Grelha de Produtos: Atualizada para lg:grid-cols-4 (4 cartões por linha) */}
+      {/* Grelha de Produtos */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {sortedProducts.map((item: any) => {
           const productPrice = Number(item.sale_price || item.price || 0);
