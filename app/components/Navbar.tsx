@@ -74,10 +74,10 @@ function NavbarContent() {
           {/* Lado Esquerdo: Botão Mobile Hambúrguer + Logótipo + Menu Desktop Alinhado à Esquerda */}
           <div className="flex items-center gap-6 lg:gap-10">
             
-            {/* Botão Hambúrguer (Visível apenas no Telemóvel) */}
+           {/* Botão Hambúrguer (Visível apenas no Telemóvel) - Alterado para branco */}
             <button 
               onClick={() => setIsMobileMenuOpen(true)}
-              className="md:hidden text-amber-400 p-1 hover:text-amber-300 transition-colors focus:outline-none"
+              className="md:hidden text-white p-1 hover:text-amber-400 transition-colors focus:outline-none"
               aria-label="Abrir Menu"
             >
               <Menu className="w-6 h-6" />
