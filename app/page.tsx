@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import Navbar from '@/app/components/Navbar';
 import { Hero } from '@/src/components/Hero';
 import { QuoteBanner } from '@/src/components/QuoteBanner';
+import { FlashSale } from '@/src/components/FlashSale';
 import { CategoryBento } from '@/src/components/CategoryBento';
 import { CatalogShowcase } from '@/src/components/CatalogShowcase';
 import { NewReleases } from '@/src/components/NewReleases';
@@ -18,6 +19,7 @@ async function ProductsSection() {
 
   return (
     <>
+      <FlashSale products={safeProducts} />
       <NewReleases products={safeProducts} />
       <CategoryBento />
       <CatalogShowcase products={safeProducts} />

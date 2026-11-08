@@ -50,10 +50,10 @@ export const NewReleases = ({ products }: { products: any[] }) => {
           Nenhum lançamento no momento.
         </div>
       ) : (
-        <div className="relative group -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="relative group/carousel -mx-4 px-4 sm:mx-0 sm:px-0">
           <button 
             onClick={() => scroll('left')}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -ml-2 sm:-ml-5 z-30 bg-slate-900/90 hover:bg-amber-500 text-slate-300 hover:text-slate-950 border border-slate-700 hover:border-amber-500 p-3 rounded-full shadow-2xl opacity-0 group-hover:opacity-100 transition-all cursor-pointer backdrop-blur-sm hidden sm:flex items-center justify-center"
+            className="absolute left-0 top-1/2 -translate-y-1/2 -ml-2 sm:-ml-5 z-30 bg-slate-900/90 hover:bg-amber-500 text-slate-300 hover:text-slate-950 border border-slate-700 hover:border-amber-500 p-3 rounded-full shadow-2xl opacity-0 group-hover/carousel:opacity-100 transition-all cursor-pointer backdrop-blur-sm hidden sm:flex items-center justify-center"
           >
             <ChevronLeft className="w-6 h-6 stroke-[3]" />
           </button>
@@ -74,7 +74,7 @@ export const NewReleases = ({ products }: { products: any[] }) => {
 
           <button 
             onClick={() => scroll('right')}
-            className="absolute right-0 top-1/2 -translate-y-1/2 -mr-2 sm:-mr-5 z-30 bg-slate-900/90 hover:bg-amber-500 text-slate-300 hover:text-slate-950 border border-slate-700 hover:border-amber-500 p-3 rounded-full shadow-2xl opacity-0 group-hover:opacity-100 transition-all cursor-pointer backdrop-blur-sm hidden sm:flex items-center justify-center"
+            className="absolute right-0 top-1/2 -translate-y-1/2 -mr-2 sm:-mr-5 z-30 bg-slate-900/90 hover:bg-amber-500 text-slate-300 hover:text-slate-950 border border-slate-700 hover:border-amber-500 p-3 rounded-full shadow-2xl opacity-0 group-hover/carousel:opacity-100 transition-all cursor-pointer backdrop-blur-sm hidden sm:flex items-center justify-center"
           >
             <ChevronRight className="w-6 h-6 stroke-[3]" />
           </button>

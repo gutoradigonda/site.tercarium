@@ -2,26 +2,57 @@ import { Suspense } from 'react';
 import { supabase } from '@/src/lib/supabase';
 import Navbar from '@/app/components/Navbar';
 import SortableGrid from '@/src/components/SortableGrid';
+import { Footer } from '../../../src/components/Footer';
 
 async function LinhaContent({ paramsPromise }: { paramsPromise: Promise<{ slug: string }> }) {
   const resolvedParams = await paramsPromise;
   
-  const slugFormatado = resolvedParams.slug.toLowerCase().replace('-', ' ');
+  const slugLimpo = resolvedParams.slug.toLowerCase().trim();
   let nomeLinha = '';
-  
-  if (slugFormatado.includes('raizes')) nomeLinha = 'Linha Raízes';
-  else if (slugFormatado.includes('essencia')) nomeLinha = 'Linha Essência';
-  else if (slugFormatado.includes('fidelis')) nomeLinha = 'Linha Fidelis';
-  else if (slugFormatado.includes('sao-bento')) nomeLinha = 'Coleção São Bento';
-  else if (slugFormatado.includes('sao-miguel')) nomeLinha = 'Coleção São Miguel';
-  else nomeLinha = resolvedParams.slug;
+  let colunaFiltro = 'subcategory';
+  let termoBusca = '';
+
+  if (slugLimpo.includes('colecao-') || slugLimpo.includes('sao-bento') || slugLimpo.includes('sao-miguel')) {
+    colunaFiltro = 'colecao';
+    if (slugLimpo.includes('sao-bento')) {
+      termoBusca = 'São Bento';
+      nomeLinha = 'Coleção São Bento';
+    } else if (slugLimpo.includes('sao-miguel')) {
+      termoBusca = 'São Miguel';
+      nomeLinha = 'Coleção São Miguel';
+    } else {
+      termoBusca = slugLimpo.replace('colecao-', '').replace(/-/g, ' ');
+      nomeLinha = `Coleção ${termoBusca.charAt(0).toUpperCase() + termoBusca.slice(1)}`;
+    }
+  } else {
+    colunaFiltro = 'subcategory';
+    if (slugLimpo.includes('raizes')) {
+      termoBusca = 'Linha Raízes';
+      nomeLinha = 'Linha Raízes';
+    } else if (slugLimpo.includes('essencia')) {
+      termoBusca = 'Linha Essência';
+      nomeLinha = 'Linha Essência';
+    } else if (slugLimpo.includes('fidelis')) {
+      termoBusca = 'Linha Fidelis';
+      nomeLinha = 'Linha Fidelis';
+    } else {
+      termoBusca = resolvedParams.slug.replace(/-/g, ' ');
+      nomeLinha = termoBusca;
+    }
+  }
 
   const { data: produtos } = await supabase
     .from('produtos')
     .select('*')
-    .ilike('subcategory', `%${nomeLinha}%`);
+    .or(`ativo_no_site.is.null,ativo_no_site.eq.true`)
+    .ilike(colunaFiltro, `%${termoBusca}%`);
 
-  const safeProducts = produtos || [];
+  const safeProducts = (produtos || []).map(p => ({
+    ...p,
+    model: p.name || p.model || 'Sem Nome',
+    image: p.imagens_galeria && p.imagens_galeria.length > 0 ? p.imagens_galeria[0] : (p.image || null),
+    imageUrl: p.imagens_galeria && p.imagens_galeria.length > 0 ? p.imagens_galeria[0] : (p.imageUrl || null)
+  }));
 
   return (
     <>
@@ -39,8 +70,7 @@ async function LinhaContent({ paramsPromise }: { paramsPromise: Promise<{ slug: 
         </p>
       </div>
 
-      {/* ALINHAMENTO CORRIGIDO: Mesma classe do Navbar (w-full px-6 md:px-12 lg:px-20) */}
-      <div className="w-full px-6 md:px-12 lg:px-20">
+      <div className="w-full px-6 md:px-12 lg:px-20 mb-20">
         <SortableGrid products={safeProducts} />
       </div>
     </>
@@ -49,20 +79,22 @@ async function LinhaContent({ paramsPromise }: { paramsPromise: Promise<{ slug: 
 
 export default function LinhaPage({ params }: { params: Promise<{ slug: string }> }) {
   return (
-    <main className="min-h-screen bg-slate-950 text-white pb-20">
-      
-      <Navbar />
+    <main className="min-h-screen bg-slate-950 text-white flex flex-col justify-between">
+      <div>
+        <Navbar />
 
-      <Suspense fallback={
-        <div className="py-32 flex flex-col items-center justify-center">
-          <div className="text-amber-500 font-bold uppercase tracking-widest text-sm animate-pulse">
-            A preparar arsenal da linha...
+        <Suspense fallback={
+          <div className="py-32 flex flex-col items-center justify-center">
+            <div className="text-amber-500 font-bold uppercase tracking-widest text-sm animate-pulse">
+              A preparar arsenal da linha...
+            </div>
           </div>
-        </div>
-      }>
-        <LinhaContent paramsPromise={params} />
-      </Suspense>
-      
+        }>
+          <LinhaContent paramsPromise={params} />
+        </Suspense>
+      </div>
+
+      <Footer />
     </main>
   );
 }

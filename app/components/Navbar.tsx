@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { ChevronDown, Menu, X, ShoppingBag } from 'lucide-react';
 import Cart from './Cart';
 import { Cinzel_Decorative, Montserrat } from 'next/font/google';
+import { supabase } from '../../src/lib/supabase';
 
 // Importando a fonte Cinzel Decorative para o logótipo
 const cinzelDecorative = Cinzel_Decorative({
@@ -19,14 +20,49 @@ const montserrat = Montserrat({
   weight: ['600', '700'],
 });
 
-// Componente interno que lida com o estado e rotas
+interface PublicProduct {
+  category: string;
+  subCategory?: string;
+  colecao?: string | null;
+  ativo_no_site?: boolean;
+}
+
+// Componente interno que lida com o estado, dados do Supabase e rotas
 function NavbarContent() {
   const [isHovered, setIsHovered] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
+  // Estados para dados dinâmicos do Supabase
+  const [products, setProducts] = useState<PublicProduct[]>([]);
+  
   const router = useRouter();
   const pathname = usePathname();
+
+  // Buscar produtos do Supabase para montar a navbar dinamicamente
+  useEffect(() => {
+    const fetchNavProducts = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('produtos')
+          .select('category, subcategory, colecao, ativo_no_site');
+
+        if (!error && data) {
+          const mapped = data.map((p: any) => ({
+            category: p.category || 'Terços',
+            subCategory: p.subcategory || p.subCategory || '',
+            colecao: p.colecao || null,
+            ativo_no_site: p.ativo_no_site ?? true,
+          }));
+          setProducts(mapped);
+        }
+      } catch (err) {
+        console.error('Erro ao buscar dados para a Navbar dinâmica:', err);
+      }
+    };
+
+    fetchNavProducts();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -58,6 +94,50 @@ function NavbarContent() {
     }
   };
 
+  // --- PROCESSAMENTO DINÂMICO DOS DADOS (Excluindo Componentes e itens inativos) ---
+  const activeProducts = useMemo(() => {
+    return products.filter(p => p.ativo_no_site !== false && p.category !== 'Componentes');
+  }, [products]);
+
+  // Subcategorias exclusivas da categoria 'Terços'
+  const dynamicTercosLines = useMemo(() => {
+    const lines = activeProducts
+      .filter(p => p.category === 'Terços' && p.subCategory)
+      .map(p => p.subCategory as string);
+    
+    const unique = Array.from(new Set(lines));
+    return unique.length > 0 ? unique.sort() : ['Linha Raízes', 'Linha Essência', 'Linha Fidelis'];
+  }, [activeProducts]);
+
+  // Subcategorias exclusivas da categoria 'Acessórios'
+  const dynamicAcessoriosLines = useMemo(() => {
+    const lines = activeProducts
+      .filter(p => p.category === 'Acessórios' && p.subCategory)
+      .map(p => p.subCategory as string);
+    
+    const unique = Array.from(new Set(lines));
+    return unique.length > 0 ? unique.sort() : ['Cordão', 'Dezenas', 'Pulseira', 'Chaveiro', 'Terço de Carro'];
+  }, [activeProducts]);
+
+  // Coleções especiais cadastradas nos produtos
+  const dynamicCollections = useMemo(() => {
+    const cols = activeProducts
+      .map(p => p.colecao)
+      .filter(Boolean) as string[];
+
+    const unique = Array.from(new Set(cols));
+    return unique.length > 0 ? unique.sort() : ['São Bento', 'São Miguel'];
+  }, [activeProducts]);
+
+  // Helper para criar slugs amigáveis para as URLs
+  const createSlug = (text: string) => {
+    return text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, '-');
+  };
+
   return (
     <>
       <header 
@@ -71,13 +151,13 @@ function NavbarContent() {
       >
         <div className="w-full px-4 sm:px-6 md:px-12 lg:px-20 flex items-center justify-between">
           
-          {/* Lado Esquerdo: Botão Mobile Hambúrguer + Logótipo + Menu Desktop Alinhado à Esquerda */}
+          {/* Lado Esquerdo: Botão Mobile Hambúrguer + Logótipo + Menu Desktop Dinâmico */}
           <div className="flex items-center gap-6 lg:gap-10">
             
-           {/* Botão Hambúrguer (Visível apenas no Telemóvel) - Alterado para branco */}
+           {/* Botão Hambúrguer (Visível apenas no Telemóvel) */}
             <button 
               onClick={() => setIsMobileMenuOpen(true)}
-              className="md:hidden text-white p-1 hover:text-amber-400 transition-colors focus:outline-none"
+              className="md:hidden text-white p-1 hover:text-amber-400 transition-colors focus:outline-none cursor-pointer"
               aria-label="Abrir Menu"
             >
               <Menu className="w-6 h-6" />
@@ -92,35 +172,67 @@ function NavbarContent() {
               Terçarium
             </a>
 
-            {/* MENU DESKTOP (Alinhado harmoniosamente à esquerda, logo após o logo) */}
+            {/* MENU DESKTOP 100% DINÂMICO */}
             <nav className={`hidden md:flex items-center gap-6 lg:gap-8 text-xs font-semibold tracking-widest text-slate-300 ${montserrat.className}`}>
               
-              {/* Dropdown Terços */}
+              {/* Dropdown Dinâmico: Terços */}
               <div className="relative group py-2">
                 <button className="flex items-center gap-1.5 hover:text-amber-400 transition-colors cursor-pointer outline-none font-semibold uppercase">
                   Terços <ChevronDown className="w-3.5 h-3.5 transition-transform duration-300 group-hover:rotate-180" />
                 </button>
 
                 <div className="absolute top-full left-0 w-52 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl py-2 flex flex-col z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 translate-y-2 group-hover:translate-y-0">
-                  <Link href="/linha/raizes" className="px-4 py-2.5 text-xs text-slate-300 hover:text-amber-400 hover:bg-slate-800/60 transition-colors font-semibold">Linha Raízes</Link>
-                  <Link href="/linha/essencia" className="px-4 py-2.5 text-xs text-slate-300 hover:text-amber-400 hover:bg-slate-800/60 transition-colors font-semibold">Linha Essência</Link>
-                  <Link href="/linha/fidelis" className="px-4 py-2.5 text-xs text-slate-300 hover:text-amber-400 hover:bg-slate-800/60 transition-colors font-semibold">Linha Fidelis</Link>
+                  {dynamicTercosLines.map((line) => (
+                    <Link 
+                      key={line} 
+                      href={`/linha/${createSlug(line)}`} 
+                      className="px-4 py-2.5 text-xs text-slate-300 hover:text-amber-400 hover:bg-slate-800/60 transition-colors font-semibold uppercase"
+                    >
+                      {line}
+                    </Link>
+                  ))}
                 </div>
               </div>
 
-              {/* Dropdown Coleções Especiais */}
+              {/* Dropdown Dinâmico: Acessórios */}
               <div className="relative group py-2">
                 <button className="flex items-center gap-1.5 hover:text-amber-400 transition-colors cursor-pointer outline-none font-semibold uppercase">
-                  Coleções Especiais <ChevronDown className="w-3.5 h-3.5 transition-transform duration-300 group-hover:rotate-180" />
+                  Acessórios <ChevronDown className="w-3.5 h-3.5 transition-transform duration-300 group-hover:rotate-180" />
                 </button>
 
-                <div className="absolute top-full left-0 w-56 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl py-2 flex flex-col z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 translate-y-2 group-hover:translate-y-0">
-                  <Link href="/linha/colecao-sao-bento" className="px-4 py-2.5 text-xs text-slate-300 hover:text-amber-400 hover:bg-slate-800/60 transition-colors font-semibold">Coleção São Bento</Link>
-                  <Link href="/linha/colecao-sao-miguel" className="px-4 py-2.5 text-xs text-slate-300 hover:text-amber-400 hover:bg-slate-800/60 transition-colors font-semibold">Coleção São Miguel</Link>
+                <div className="absolute top-full left-0 w-52 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl py-2 flex flex-col z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+                  {dynamicAcessoriosLines.map((sub) => (
+                    <Link 
+                      key={sub} 
+                      href={`/acessorios/${createSlug(sub)}`} 
+                      className="px-4 py-2.5 text-xs text-slate-300 hover:text-amber-400 hover:bg-slate-800/60 transition-colors font-semibold uppercase"
+                    >
+                      {sub}
+                    </Link>
+                  ))}
                 </div>
               </div>
 
-              <Link href="/catalogo" className="hover:text-amber-400 transition-colors py-2 font-semibold uppercase">Acessórios</Link>
+              {/* Dropdown Dinâmico: Coleções Especiais */}
+              {dynamicCollections.length > 0 && (
+                <div className="relative group py-2">
+                  <button className="flex items-center gap-1.5 hover:text-amber-400 transition-colors cursor-pointer outline-none font-semibold uppercase">
+                    Coleções Especiais <ChevronDown className="w-3.5 h-3.5 transition-transform duration-300 group-hover:rotate-180" />
+                  </button>
+
+                  <div className="absolute top-full left-0 w-56 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl py-2 flex flex-col z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+                    {dynamicCollections.map((col) => (
+                      <Link 
+                        key={col} 
+                        href={`/linha/colecao-${createSlug(col)}`} 
+                        className="px-4 py-2.5 text-xs text-slate-300 hover:text-amber-400 hover:bg-slate-800/60 transition-colors font-semibold uppercase"
+                      >
+                        Coleção {col}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
             </nav>
 
           </div>
@@ -133,10 +245,10 @@ function NavbarContent() {
         </div>
       </header>
 
-      {/* --- MENU MOBILE (GAVETA LATERAL / DRAWER) --- */}
+      {/* --- MENU MOBILE DINÂMICO (GAVETA LATERAL / DRAWER) --- */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-50 md:hidden flex">
-          {/* Fundo escuro transparente (ao clicar fora, fecha o menu) */}
+          {/* Fundo escuro transparente */}
           <div 
             className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity"
             onClick={() => setIsMobileMenuOpen(false)}
@@ -152,36 +264,65 @@ function NavbarContent() {
               </span>
               <button 
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-2 text-slate-400 hover:text-white rounded-lg bg-slate-900/80 border border-slate-800"
+                className="p-2 text-slate-400 hover:text-white rounded-lg bg-slate-900/80 border border-slate-800 cursor-pointer"
                 aria-label="Fechar Menu"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Links de Navegação Mobile */}
+            {/* Links de Navegação Mobile Dinâmicos */}
             <div className={`flex flex-col gap-6 pt-6 text-xs font-semibold tracking-wider text-slate-300 ${montserrat.className}`}>
               
+              {/* Terços e Linhas */}
               <div className="space-y-3">
                 <span className="text-amber-400 text-[10px] uppercase tracking-widest block font-bold">Terços</span>
                 <div className="flex flex-col pl-3 space-y-3 border-l border-slate-800">
-                  <Link href="/linha/raizes" className="hover:text-amber-400 transition-colors uppercase">Linha Raízes</Link>
-                  <Link href="/linha/essencia" className="hover:text-amber-400 transition-colors uppercase">Linha Essência</Link>
-                  <Link href="/linha/fidelis" className="hover:text-amber-400 transition-colors uppercase">Linha Fidelis</Link>
+                  {dynamicTercosLines.map((line) => (
+                    <Link 
+                      key={line} 
+                      href={`/linha/${createSlug(line)}`} 
+                      className="hover:text-amber-400 transition-colors uppercase"
+                    >
+                      {line}
+                    </Link>
+                  ))}
                 </div>
               </div>
 
+              {/* Acessórios e Subcategorias */}
               <div className="space-y-3 pt-2">
-                <span className="text-amber-400 text-[10px] uppercase tracking-widest block font-bold">Coleções Especiais</span>
+                <span className="text-amber-400 text-[10px] uppercase tracking-widest block font-bold">Acessórios</span>
                 <div className="flex flex-col pl-3 space-y-3 border-l border-slate-800">
-                  <Link href="/linha/colecao-sao-bento" className="hover:text-amber-400 transition-colors uppercase">Coleção São Bento</Link>
-                  <Link href="/linha/colecao-sao-miguel" className="hover:text-amber-400 transition-colors uppercase">Coleção São Miguel</Link>
+                  {dynamicAcessoriosLines.map((sub) => (
+                    <Link 
+                      key={sub} 
+                      href={`/acessorios/${createSlug(sub)}`} 
+                      className="hover:text-amber-400 transition-colors uppercase"
+                    >
+                      {sub}
+                    </Link>
+                  ))}
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-slate-800">
-                <Link href="/catalogo" className="block py-2 hover:text-amber-400 transition-colors uppercase">Acessórios</Link>
-              </div>
+              {/* Coleções Especiais */}
+              {dynamicCollections.length > 0 && (
+                <div className="space-y-3 pt-2">
+                  <span className="text-amber-400 text-[10px] uppercase tracking-widest block font-bold">Coleções Especiais</span>
+                  <div className="flex flex-col pl-3 space-y-3 border-l border-slate-800">
+                    {dynamicCollections.map((col) => (
+                      <Link 
+                        key={col} 
+                        href={`/linha/colecao-${createSlug(col)}`} 
+                        className="hover:text-amber-400 transition-colors uppercase"
+                      >
+                        Coleção {col}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
 
             </div>
 
