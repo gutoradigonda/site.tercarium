@@ -64,8 +64,8 @@ export default function SortableGrid({ products }: { products: any[] }) {
         </div>
       </div>
 
-      {/* Grelha de Produtos com o Card Oficial (que já tem promoções!) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Grelha de Produtos: 2 colunas no mobile, 2 no tablet e 4 no desktop */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {sortedProducts.map((item: any) => (
           <ProductCard key={item.id} product={item} />
         ))}
