@@ -50,7 +50,10 @@ export default function Home() {
       
       <HistorySection />
       
-      <Testimonials />
+      {/* Avaliações dinâmicas carregadas com streaming */}
+      <Suspense fallback={null}>
+        <Testimonials />
+      </Suspense>
 
       {/* Rodapé e Botão Flutuante do WhatsApp */}
       <Footer />
