@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ShieldCheck, Truck, RotateCcw, Sparkles } from 'lucide-react';
+import { ShieldCheck, Truck, RotateCcw, Sparkles, Clock } from 'lucide-react';
 import { Montserrat } from 'next/font/google';
 
 const montserrat = Montserrat({
@@ -54,8 +54,8 @@ export default function ProductGallery({ images, category }: { images: string[],
         </div>
       )}
 
-      {/* Bloco de Rigor Artesanal (Sem menção a garantia vitalícia) */}
-      <div className="bg-[#050810]/70 border border-slate-800/60 rounded-2xl p-4 mb-6 flex items-center gap-3.5">
+      {/* Bloco de Rigor Artesanal */}
+      <div className="bg-[#050810]/70 border border-slate-800/60 rounded-2xl p-4 mb-3 flex items-center gap-3.5">
         <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
           <Sparkles className="w-5 h-5 text-amber-500" />
         </div>
@@ -65,6 +65,21 @@ export default function ProductGallery({ images, category }: { images: string[],
           </h4>
           <p className="text-slate-400 text-[11px] leading-relaxed">
             Cada peça passa por um rigoroso processo de montagem manual para assegurar firmeza e imponência.
+          </p>
+        </div>
+      </div>
+
+      {/* Bloco: Produção Sob Encomenda (Opção 2) */}
+      <div className="bg-[#050810]/70 border border-slate-800/60 rounded-2xl p-4 mb-6 flex items-center gap-3.5">
+        <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
+          <Clock className="w-5 h-5 text-amber-500" />
+        </div>
+        <div>
+          <h4 className="text-amber-500 text-xs font-black uppercase tracking-wider mb-0.5">
+            Produção Individual e Dedicada
+          </h4>
+          <p className="text-slate-400 text-[11px] leading-relaxed">
+            Por ser um trabalho 100% manual e sem pronta-entrega, temos o prazo de <strong className="text-slate-200 font-semibold">até 5 dias úteis</strong> para confeccionar a sua peça com perfeição.
           </p>
         </div>
       </div>

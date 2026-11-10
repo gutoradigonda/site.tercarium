@@ -24,9 +24,9 @@ export const QuoteBanner = () => {
           “Dai-me um exército que reze o rosário e vencerei o mundo.”
         </h2>
         
-        {/* Autor com a fonte Montserrat SemiBold e tamanho ajustado */}
-        <span className={`${montserrat.className} text-amber-500 font-semibold uppercase tracking-[0.3em] text-[11px] sm:text-xs`}>
-          Papa São Pio X
+        {/* Atribuição atualizada com fonte Montserrat SemiBold e tracking calibrado para o novo tamanho de texto */}
+        <span className={`${montserrat.className} text-amber-500 font-semibold uppercase tracking-[0.18em] text-[10px] sm:text-xs max-w-2xl leading-relaxed`}>
+          Frase tradicionalmente atribuída aos papas Pio IX e São Pio X
         </span>
 
       </div>

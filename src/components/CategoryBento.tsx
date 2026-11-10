@@ -1,6 +1,5 @@
 import React from 'react';
 import Link from 'next/link';
-import { Shield, Flame, Anchor, ArrowRight } from 'lucide-react';
 import { Montserrat } from 'next/font/google';
 
 const montserrat = Montserrat({
@@ -13,33 +12,24 @@ export const CategoryBento: React.FC = () => {
     {
       slug: 'raizes',
       title: 'Linha Raízes',
-      description: 'A nossa linha premium. Terços robustos, forjados com pedras naturais pesadas e metais de alta resistência.',
-      icon: <Shield className="w-6 h-6 text-amber-500" />,
-      borderHover: 'hover:border-amber-500/50',
-      shadowHover: 'hover:shadow-amber-500/10'
+      src: '/raizes.webp',
     },
     {
       slug: 'fidelis',
       title: 'Linha Fidelis',
-      description: 'Tradição e leveza. Peças clássicas e intemporais, mantendo a durabilidade do ateliê.',
-      icon: <Flame className="w-6 h-6 text-amber-500" />,
-      borderHover: 'hover:border-amber-500/50',
-      shadowHover: 'hover:shadow-amber-500/10'
+      src: '/fidelis.webp',
     },
     {
       slug: 'essencia',
       title: 'Linha Essência',
-      description: 'A pureza da fé. Modelos focados no essencial, com design minimalista e altamente resistente.',
-      icon: <Anchor className="w-6 h-6 text-amber-500" />,
-      borderHover: 'hover:border-amber-500/50',
-      shadowHover: 'hover:shadow-amber-500/10'
-    }
+      src: '/essencia.webp',
+    },
   ];
 
   return (
     <section className={`w-full bg-slate-950 pb-10 pt-0 px-6 md:px-12 lg:px-20 ${montserrat.className}`}>
       
-      {/* Divisor Ornamental puxado para cima com margem negativa (-mt-8 / -mt-12) */}
+      {/* Divisor Ornamental */}
       <div className="w-full flex justify-center items-center pb-10 -mt-2 sm:-mt-4 z-10 relative">
         <img 
           src="/quebra.png" 
@@ -50,6 +40,7 @@ export const CategoryBento: React.FC = () => {
 
       <div className="max-w-7xl mx-auto">
         
+        {/* Cabeçalho */}
         <div className="flex flex-col items-center justify-center mb-12 text-center space-y-2">
           <span className="text-amber-500 font-bold tracking-[0.2em] text-[10px] sm:text-xs uppercase">
             O Nosso Armamento Principal
@@ -60,28 +51,22 @@ export const CategoryBento: React.FC = () => {
           <div className="w-16 h-1 bg-amber-500 mt-1"></div>
         </div>
 
+        {/* Grid com apenas as imagens dos cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {lines.map((line) => (
             <Link 
               key={line.slug}
               href={`/linha/${line.slug}`}
-              className={`bg-slate-900/60 border border-slate-800 rounded-3xl p-8 flex flex-col justify-between transition-all duration-300 ${line.borderHover} hover:shadow-2xl ${line.shadowHover} group cursor-pointer`}
+              prefetch={false}
+              className="group block overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/60 shadow-xl transition-all duration-300 hover:border-amber-500/50 hover:shadow-2xl hover:shadow-amber-500/10 cursor-pointer"
             >
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center group-hover:border-amber-500/40 transition-colors">
-                  {line.icon}
-                </div>
-                <h3 className="text-xl font-black text-white uppercase tracking-wide group-hover:text-amber-400 transition-colors">
-                  {line.title}
-                </h3>
-                <p className="text-slate-400 text-sm leading-relaxed">
-                  {line.description}
-                </p>
-              </div>
-
-              <div className="pt-8 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-amber-500 group-hover:text-amber-400 transition-colors">
-                <span>Explorar</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <div className="relative aspect-[4/3] w-full overflow-hidden">
+                <img
+                  src={line.src}
+                  alt={line.title}
+                  className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                  loading="lazy"
+                />
               </div>
             </Link>
           ))}

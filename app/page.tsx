@@ -1,5 +1,4 @@
 import { Suspense } from 'react';
-import Navbar from '@/app/components/Navbar';
 import { Hero } from '@/src/components/Hero';
 import { QuoteBanner } from '@/src/components/QuoteBanner';
 import { FlashSale } from '@/src/components/FlashSale';
@@ -8,8 +7,7 @@ import { CatalogShowcase } from '@/src/components/CatalogShowcase';
 import { NewReleases } from '@/src/components/NewReleases';
 import { HistorySection } from '@/src/components/HistorySection';
 import { Testimonials } from '@/src/components/Testimonials';
-import { Footer } from '@/src/components/Footer';
-import { WhatsAppButton } from '@/src/components/WhatsAppButton';
+import { NewsletterBanner } from '@/src/components/NewsletterBanner';
 import { supabase } from '@/src/lib/supabase';
 
 // Sub-componente que carrega os produtos em background
@@ -29,10 +27,7 @@ async function ProductsSection() {
 
 export default function Home() {
   return (
-    <main className="min-h-screen flex flex-col bg-slate-950 text-white">
-      {/* Menu Superior */}
-      <Navbar />
-
+    <main className="w-full flex flex-col bg-slate-950 text-white">
       {/* Secção Principal (Hero) */}
       <Hero />
 
@@ -55,9 +50,8 @@ export default function Home() {
         <Testimonials />
       </Suspense>
 
-      {/* Rodapé e Botão Flutuante do WhatsApp */}
-      <Footer />
-      <WhatsAppButton />
+      {/* Banner Promocional / Captura de Newsletter */}
+      <NewsletterBanner />
     </main>
   );
 }

@@ -1,5 +1,4 @@
 import React from 'react';
-import Navbar from '@/app/components/Navbar';
 import { Footer } from '@/src/components/Footer';
 import { WhatsAppButton } from '@/src/components/WhatsAppButton';
 import { Montserrat } from 'next/font/google';
@@ -12,8 +11,7 @@ const montserrat = Montserrat({
 export default function QuemSomosPage() {
   return (
     <main className={`min-h-screen flex flex-col bg-slate-950 text-white ${montserrat.className}`}>
-      <Navbar />
-
+      
       <section className="pt-36 pb-20 px-6 max-w-4xl mx-auto flex-1 w-full">
         {/* Cabeçalho Centralizado */}
         <div className="text-center mb-10">

@@ -1,23 +1,25 @@
 import { Suspense } from 'react';
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { CartProvider } from "@/src/context/CartContext";
-import Navbar from "@/app/components/Navbar"; // Exemplo do caminho do seu Navbar
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import './globals.css';
+import { CartProvider } from '@/src/context/CartContext';
+import Navbar from '@/app/components/Navbar';
+import { Footer } from '@/src/components/Footer';
+import { WhatsAppButton } from '@/src/components/WhatsAppButton';
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
-  title: "Terçarium | Terços de Alta Resistência",
-  description: "Terços forjados para o combate espiritual diário.",
+  title: 'Terçarium | Terços de Alta Resistência',
+  description: 'Terços forjados para o combate espiritual diário.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -28,11 +30,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body className="min-h-full flex flex-col bg-slate-950 text-white" suppressHydrationWarning>
         <CartProvider>
-          {/* Envolve o Navbar no Suspense para evitar o erro de prerender do usePathname */}
+          {/* Menu Superior Global */}
           <Suspense fallback={null}>
             <Navbar />
           </Suspense>
-          {children}
+
+          {/* Conteúdo dinâmico da página atual */}
+          <div className="flex-1 flex flex-col">
+            {children}
+          </div>
+
+          {/* Rodapé e WhatsApp Globais (Aparecem em todas as rotas) */}
+          <Footer />
+          <WhatsAppButton />
         </CartProvider>
       </body>
     </html>

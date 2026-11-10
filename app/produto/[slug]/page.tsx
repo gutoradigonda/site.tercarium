@@ -1,6 +1,5 @@
 import React, { Suspense } from 'react';
 import Navbar from '@/app/components/Navbar';
-import { Footer } from '@/src/components/Footer';
 import { supabase } from '@/src/lib/supabase';
 import { notFound } from 'next/navigation';
 import { ShoppingBag, MapPin, Loader2 } from 'lucide-react';
@@ -189,7 +188,6 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
           <ProductDetails params={params} />
         </Suspense>
       </section>
-      <Footer />
     </main>
   );
 }

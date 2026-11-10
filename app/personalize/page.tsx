@@ -1,5 +1,4 @@
 import React from 'react';
-import Navbar from '@/app/components/Navbar';
 import { Footer } from '@/src/components/Footer';
 import { WhatsAppButton } from '@/src/components/WhatsAppButton';
 import { Montserrat, Cinzel_Decorative } from 'next/font/google';
@@ -22,8 +21,7 @@ export default function PersonalizePage() {
 
   return (
     <main className={`min-h-screen flex flex-col bg-slate-950 text-white ${montserrat.className}`}>
-      <Navbar />
-
+      
       <section className="pt-36 pb-20 px-6 max-w-4xl mx-auto flex-1 w-full text-center">
         <span className="text-amber-500 font-bold tracking-[0.2em] text-[10px] sm:text-xs uppercase block mb-3">
           Ateliê Sob Medida

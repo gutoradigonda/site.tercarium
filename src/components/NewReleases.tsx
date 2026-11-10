@@ -10,10 +10,24 @@ const montserrat = Montserrat({
   weight: ['400', '600', '700', '900'],
 });
 
-export const NewReleases = ({ products }: { products: any[] }) => {
+export const NewReleases = ({ products = [] }: { products: any[] }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const newProducts = [...products]
+  // Filtra por permissão no site, selo de lançamento e exclui medalhas
+  const newProducts = products
+    .filter((product) => {
+      // 1. Deve estar ativo para venda no site
+      const ativoNoSite = product.ativo_no_site === true;
+
+      // 2. Deve ter o selo de Lançamento Recente ligado
+      const ehLancamento = product.lancamento === true;
+
+      // 3. Exclui a categoria 'Medalhas'
+      const categoria = (product.categoria || product.category || '').toLowerCase();
+      const ehMedalha = categoria.includes('medalha');
+
+      return ativoNoSite && ehLancamento && !ehMedalha;
+    })
     .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
     .slice(0, 8);
 
@@ -46,7 +60,7 @@ export const NewReleases = ({ products }: { products: any[] }) => {
       </div>
 
       {newProducts.length === 0 ? (
-        <div className="text-center py-12 text-slate-500 border border-dashed border-slate-800 rounded-2xl">
+        <div className="text-center py-12 text-slate-500 border border-dashed border-slate-800 rounded-2xl max-w-xl mx-auto">
           Nenhum lançamento no momento.
         </div>
       ) : (
@@ -62,14 +76,24 @@ export const NewReleases = ({ products }: { products: any[] }) => {
             ref={scrollContainerRef}
             className="flex gap-6 sm:gap-8 overflow-x-auto snap-x snap-mandatory pb-2 pt-2 scroll-smooth hide-scrollbar"
           >
-            {newProducts.map((product) => (
-              <div 
-                key={product.id} 
-                className="snap-start shrink-0 w-[85%] sm:w-[calc(50%-1rem)] md:w-[calc(33.333%-1.33rem)] lg:w-[calc(25%-1.5rem)] 2xl:w-[calc(20%-1.6rem)]"
-              >
-                <ProductCard product={product} />
-              </div>
-            ))}
+            {newProducts.map((product) => {
+              const safeProduct = {
+                ...product,
+                model: product.model || product.name || 'Sem Nome',
+                image: product.imagens_galeria && product.imagens_galeria.length > 0 
+                  ? product.imagens_galeria[0] 
+                  : (product.image || product.imageUrl)
+              };
+
+              return (
+                <div 
+                  key={product.id} 
+                  className="snap-start shrink-0 w-[85%] sm:w-[calc(50%-1rem)] md:w-[calc(33.333%-1.33rem)] lg:w-[calc(25%-1.5rem)] 2xl:w-[calc(20%-1.6rem)]"
+                >
+                  <ProductCard product={safeProduct} />
+                </div>
+              );
+            })}
           </div>
 
           <button 

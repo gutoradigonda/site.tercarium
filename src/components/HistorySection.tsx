@@ -49,8 +49,8 @@ export const HistorySection: React.FC = () => {
             <div className="w-16 h-1 bg-amber-500 mt-1"></div>
           </div>
 
-          {/* Layout de Duas Colunas (Texto e Imagem) */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center relative z-10">
+          {/* Layout de Duas Colunas com estiramento vertical exato */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-stretch relative z-10">
             
             {/* Coluna da Esquerda: Texto Explicativo Justificado */}
             <div className={`lg:col-span-7 text-slate-300 text-sm sm:text-base leading-relaxed text-justify space-y-5 ${lato.className}`}>
@@ -81,20 +81,14 @@ export const HistorySection: React.FC = () => {
               </p>
             </div>
 
-            {/* Coluna da Direita: Imagem Estática com moldura interna */}
-            <div className="lg:col-span-5 flex justify-center">
-              <div className="relative w-full h-[380px] sm:h-[450px] rounded-2xl overflow-hidden shadow-2xl border border-slate-700/60 bg-slate-950">
+            {/* Coluna da Direita: Imagem Estática limpa ocupando 100% da altura */}
+            <div className="lg:col-span-5 flex w-full">
+              <div className="relative w-full min-h-[380px] lg:min-h-full rounded-2xl overflow-hidden shadow-2xl border border-slate-700/60 bg-slate-950">
                 <img 
-                  src="https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=1000&auto=format&fit=crop" 
+                  src="/historia.webp" 
                   alt="História do Santo Terço" 
-                  className="w-full h-full object-cover opacity-90 hover:scale-105 transition-transform duration-700"
+                  className="w-full h-full object-cover opacity-90 hover:scale-105 transition-transform duration-700 absolute inset-0"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
-                <div className="absolute bottom-4 left-4 right-4 text-center">
-                  <span className="text-[10px] uppercase tracking-[0.25em] text-amber-400 font-bold bg-slate-950/80 px-3 py-1 rounded-full border border-slate-800-500/30 shadow-md">
-                    Patrimônio Espiritual
-                  </span>
-                </div>
               </div>
             </div>
 

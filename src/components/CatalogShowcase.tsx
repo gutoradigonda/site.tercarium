@@ -10,10 +10,25 @@ const montserrat = Montserrat({
   weight: ['400', '600', '700', '900'],
 });
 
-export const CatalogShowcase = ({ products }: { products: any[] }) => {
+export const CatalogShowcase = ({ products = [] }: { products: any[] }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const featuredProducts = products.slice(0, 8);
+  // Filtra usando exatamente os campos do seu Supabase
+  const featuredProducts = products
+    .filter((product) => {
+      // 1. Deve estar ativo para venda no site
+      const ativoNoSite = product.ativo_no_site === true;
+
+      // 2. Deve ter o selo de Destaque / Mais Vendidos ligado
+      const ehDestaque = product.destaque_vendas === true;
+
+      // 3. Exclui a categoria 'Medalhas'
+      const categoria = (product.categoria || product.category || '').toLowerCase();
+      const ehMedalha = categoria.includes('medalha');
+
+      return ativoNoSite && ehDestaque && !ehMedalha;
+    })
+    .slice(0, 8);
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollContainerRef.current) {
@@ -52,8 +67,8 @@ export const CatalogShowcase = ({ products }: { products: any[] }) => {
       </div>
 
       {featuredProducts.length === 0 ? (
-        <div className="text-center py-12 text-slate-500 border border-dashed border-slate-800 rounded-2xl">
-          O arsenal está vazio.
+        <div className="text-center py-12 text-slate-500 border border-dashed border-slate-800 rounded-2xl max-w-xl mx-auto">
+          Nenhum produto marcado como destaque no momento.
         </div>
       ) : (
         <div className="relative group/carousel -mx-4 px-4 sm:mx-0 sm:px-0">
