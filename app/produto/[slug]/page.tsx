@@ -1,11 +1,11 @@
 import React, { Suspense } from 'react';
-import Navbar from '@/app/components/Navbar';
 import { supabase } from '@/src/lib/supabase';
 import { notFound } from 'next/navigation';
 import { ShoppingBag, MapPin, Loader2 } from 'lucide-react';
 import ProductGallery from '@/src/components/ProductGallery';
 import ProductCard from '@/app/components/ProductCard';
 import { Montserrat } from 'next/font/google';
+import { AddToCartButton } from '@/src/components/AddToCartButton';
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -154,12 +154,30 @@ async function ProductDetails({ params }: { params: Promise<{ slug: string }> })
                 OK
               </button>
             </div>
+            {/* Link "Não sei meu CEP" adicionado com o mesmo estilo do carrinho */}
+            <a 
+              href="http://www.buscacep.correios.com.br/sistemas/buscacep/" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-[10px] text-slate-500 hover:text-amber-500 underline mt-2.5 inline-block transition-colors"
+            >
+              Não sei meu CEP
+            </a>
           </div>
 
-          <button className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm uppercase tracking-widest py-4 rounded-xl transition-all flex items-center justify-center gap-3 cursor-pointer shadow-lg shadow-amber-500/10 hover:shadow-amber-500/20">
-            <ShoppingBag className="w-5 h-5" />
-            Adicionar ao Carrinho
-          </button>
+          {/* BOTÃO INTERATIVO INTEGRADO */}
+          <AddToCartButton 
+            product={{
+              id: product.id,
+              name: product.model || product.name,
+              price: precoExibicao,
+              estoqueMax: product.stock || 0,
+              imageUrl: imagesArray[0],
+              category: product.category,
+              line: product.subcategory,
+              subcategory: product.subcategory
+            }} 
+          />
           
           <p className="text-center text-slate-500 text-[10px] mt-4">
             Dúvidas sobre o produto? <a href="#" className="text-amber-500 font-bold hover:underline">Fale conosco no WhatsApp</a>
@@ -175,7 +193,6 @@ async function ProductDetails({ params }: { params: Promise<{ slug: string }> })
 export default function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   return (
     <main className="min-h-screen flex flex-col bg-[#050810] text-white">
-      <Navbar />
       <section className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-10 lg:py-16">
         <Suspense fallback={
           <div className="flex flex-col items-center justify-center py-32 space-y-4">

@@ -1,11 +1,16 @@
 import { create } from 'zustand';
 
 export interface CartItem {
-  id: string; // ID único para o item no carrinho (caso compre o mesmo terço 2x com personalizações diferentes)
+  id: string;
   productId: string;
   name: string;
   basePrice: number;
   quantity: number;
+  estoqueMax: number;
+  imageUrl?: string;
+  category?: string;
+  line?: string;
+  subcategory?: string; // <--- Adicionado para suportar acessórios
   extraId?: string;
   extraName?: string;
   extraPrice?: number;
@@ -14,6 +19,9 @@ export interface CartItem {
 
 interface CartState {
   items: CartItem[];
+  isOpen: boolean;
+  openCart: () => void;
+  closeCart: () => void;
   addItem: (item: CartItem) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
@@ -22,9 +30,12 @@ interface CartState {
 
 export const useCartStore = create<CartState>((set) => ({
   items: [],
+  isOpen: false,
+
+  openCart: () => set({ isOpen: true }),
+  closeCart: () => set({ isOpen: false }),
   
   addItem: (newItem) => set((state) => {
-    // Verifica se já existe um item exato (mesmo produto, extra e observação)
     const existingItemIndex = state.items.findIndex(
       (item) => 
         item.productId === newItem.productId && 
@@ -33,14 +44,25 @@ export const useCartStore = create<CartState>((set) => ({
     );
 
     if (existingItemIndex >= 0) {
-      // Se existir, apenas aumenta a quantidade
       const updatedItems = [...state.items];
-      updatedItems[existingItemIndex].quantity += newItem.quantity;
-      return { items: updatedItems };
+      const currentItem = updatedItems[existingItemIndex];
+      
+      const novaQuantidade = currentItem.quantity + newItem.quantity;
+      if (novaQuantidade <= newItem.estoqueMax) {
+        currentItem.quantity = novaQuantidade;
+      } else {
+        currentItem.quantity = newItem.estoqueMax; 
+      }
+      
+      return { items: updatedItems, isOpen: true };
     }
 
-    // Se for novo, adiciona à lista
-    return { items: [...state.items, newItem] };
+    const quantidadeValidada = Math.min(newItem.quantity, newItem.estoqueMax);
+    
+    return { 
+      items: [...state.items, { ...newItem, quantity: quantidadeValidada }],
+      isOpen: true
+    };
   }),
 
   removeItem: (id) => set((state) => ({
@@ -48,9 +70,13 @@ export const useCartStore = create<CartState>((set) => ({
   })),
 
   updateQuantity: (id, quantity) => set((state) => ({
-    items: state.items.map((item) => 
-      item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item
-    )
+    items: state.items.map((item) => {
+      if (item.id === id) {
+        const qtdValidada = Math.max(1, Math.min(quantity, item.estoqueMax));
+        return { ...item, quantity: qtdValidada };
+      }
+      return item;
+    })
   })),
 
   clearCart: () => set({ items: [] })
